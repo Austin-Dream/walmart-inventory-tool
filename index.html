@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walmart 库存查询工具 · Austin-Dream</title>
+    <meta name="description" content="Walmart 库存自动查询工具，支持批量抓取库存、主图，导出Excel，简单易用。">
+    <meta name="keywords" content="Walmart, 库存查询, 批量抓取, Excel, 自动化工具">
+    <meta property="og:title" content="Walmart 库存查询工具">
+    <meta property="og:description" content="批量查询 Walmart 商品库存并自动抓取主图，支持Excel模板导入。">
+    <meta property="og:url" content="https://austin-dream.github.io/walmart-inventory-tool/">
+    <meta name="twitter:card" content="summary_large_image">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+            background-color: #f5f7fa;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            overflow: hidden;
+            padding: 40px 48px;
+        }
+        @media (max-width: 640px) { .container { padding: 24px 18px; } }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9edf2;
+            padding-bottom: 20px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .logo { font-size: 22px; font-weight: 700; color: #0f172a; }
+        .logo span { color: #2563eb; }
+        .version-badge {
+            background: #e9edf2;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+        }
+        .version-badge strong { color: #2563eb; }
+        .hero {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            margin-bottom: 48px;
+            flex-wrap: wrap;
+        }
+        .hero-text { flex: 1 1 300px; }
+        .hero-text h1 { font-size: 32px; font-weight: 700; line-height: 1.2; margin-bottom: 12px; color: #0f172a; }
+        .hero-text p { font-size: 18px; color: #475569; margin-bottom: 24px; }
+        .hero-image { flex: 1 1 300px; text-align: center; }
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border: 1px solid #e9edf2;
+        }
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #2563eb;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 14px 36px;
+            border-radius: 60px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+        }
+        .download-btn:hover { background: #1d4ed8; transform: translateY(-2px); }
+        .download-btn:active { transform: scale(0.96); }
+        .download-btn .icon { font-size: 24px; }
+        .download-meta { margin-top: 16px; font-size: 14px; color: #64748b; }
+        .download-meta a { color: #2563eb; text-decoration: none; }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin: 48px 0;
+        }
+        .feature-card {
+            background: #f8fafc;
+            padding: 24px 20px;
+            border-radius: 16px;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        .feature-card:hover { background: #f1f5f9; }
+        .feature-card .emoji { font-size: 36px; margin-bottom: 8px; }
+        .feature-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+        .feature-card p { font-size: 14px; color: #64748b; }
+        .notice {
+            background: #fffbeb;
+            border-left: 5px solid #f59e0b;
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin: 32px 0;
+        }
+        .notice h4 { color: #92400e; margin-bottom: 6px; }
+        .notice ul { margin-left: 20px; color: #78350f; font-size: 14px; }
+        .changelog { margin: 32px 0; padding-top: 24px; border-top: 1px solid #e9edf2; }
+        .changelog h3 { margin-bottom: 12px; }
+        .changelog ul { list-style: none; padding: 0; }
+        .changelog li { padding: 4px 0; font-size: 15px; border-bottom: 1px dashed #f1f5f9; }
+        .changelog .date { color: #94a3b8; font-size: 13px; margin-right: 12px; }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e9edf2;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .footer a { color: #2563eb; text-decoration: none; }
+        .footer .social a { margin-left: 16px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div class="logo">🛒 <span>Walmart</span> 库存工具</div>
+        <div class="version-badge">版本 <strong id="version-number">v2.4</strong></div>
+    </header>
+    <section class="hero">
+        <div class="hero-text">
+            <h1>批量查询 Walmart 库存 &amp; 主图</h1>
+            <p>支持 Excel 模板导入，一键抓取库存数量和商品图片，数据自动回填。</p>
+            <a href="#" id="download-link" class="download-btn">
+                <span class="icon">⬇️</span> 立即下载 (Windows)
+            </a>
+            <div class="download-meta">
+                最新版本 · 文件大小 <span id="file-size">未知</span> · 
+                <a href="#" id="release-notes-link">查看更新日志</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="screenshot.png" alt="软件界面截图" onerror="this.style.display='none'">
+        </div>
+    </section>
+    <section class="features">
+        <div class="feature-card"><div class="emoji">📊</div><h3>批量处理</h3><p>支持数百个商品 ID 一次性查询</p></div>
+        <div class="feature-card"><div class="emoji">🖼️</div><h3>主图自动抓取</h3><p>下载并嵌入 Excel，直观预览</p></div>
+        <div class="feature-card"><div class="emoji">🔒</div><h3>运行稳定</h3><p>支持代理设置，自动重试机制</p></div>
+        <div class="feature-card"><div class="emoji">⏱️</div><h3>可控频率</h3><p>可调请求间隔，避免被封锁</p></div>
+    </section>
+    <div class="notice">
+        <h4>⚠️ 运行前请注意</h4>
+        <ul>
+            <li>建议开启全局代理（美国节点）以保证访问稳定</li>
+            <li>若频繁出现 403 错误，请增大请求间隔或更换 IP</li>
+            <li>查询期间请勿打开目标 Excel 文件</li>
+        </ul>
+    </div>
+    <section class="changelog" id="changelog">
+        <h3>📋 更新日志</h3>
+        <ul id="changelog-list"><li>加载中...</li></ul>
+    </section>
+    <footer class="footer">
+        <span>© 2025 Austin-Dream · 开源工具</span>
+        <div class="social">
+            <a href="https://github.com/Austin-Dream" target="_blank">GitHub</a>
+            <a href="https://github.com/Austin-Dream/walmart-inventory-tool" target="_blank">仓库地址</a>
+        </div>
+    </footer>
+</div>
+<script>
+    (function() {
+        const REPO_OWNER = 'Austin-Dream';
+        const REPO_NAME = 'walmart-inventory-tool';
+        const ASSET_NAME = 'WalmartStockTool.exe';
+
+        const versionEl = document.getElementById('version-number');
+        const downloadLink = document.getElementById('download-link');
+        const fileSizeEl = document.getElementById('file-size');
+        const changelogList = document.getElementById('changelog-list');
+
+        async function fetchLatestRelease() {
+            const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('获取 Release 失败:', error);
+                return null;
+            }
+        }
+
+        async function updatePage() {
+            const release = await fetchLatestRelease();
+            if (!release) {
+                versionEl.textContent = 'v2.4';
+                downloadLink.href = '#';
+                return;
+            }
+            versionEl.textContent = release.tag_name;
+            let asset = null;
+            if (release.assets && release.assets.length > 0) {
+                asset = release.assets.find(a => a.name === ASSET_NAME) || release.assets[0];
+            }
+            if (asset) {
+                downloadLink.href = asset.browser_download_url;
+                const sizeMB = (asset.size / (1024 * 1024)).toFixed(1);
+                fileSizeEl.textContent = `${sizeMB} MB`;
+            } else {
+                downloadLink.href = release.html_url;
+                fileSizeEl.textContent = '未知';
+            }
+            const body = release.body || '暂无更新说明。';
+            const lines = body.split('\n').filter(line => line.trim() !== '');
+            const date = new Date(release.published_at).toLocaleDateString('zh-CN');
+            changelogList.innerHTML = '';
+            if (lines.length === 0) {
+                changelogList.innerHTML = `<li><span class="date">${date}</span> ${release.tag_name} 发布</li>`;
+            } else {
+                const showLines = lines.slice(0, 5);
+                showLines.forEach(line => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="date">${date}</span> ${line}`;
+                    changelogList.appendChild(li);
+                });
+                if (lines.length > 5) {
+                    const moreLi = document.createElement('li');
+                    moreLi.innerHTML = `<span class="date">⋯</span> 更多内容请查看 <a href="${release.html_url}" target="_blank">Release 页面</a>`;
+                    changelogList.appendChild(moreLi);
+                }
+            }
+            document.getElementById('release-notes-link').href = release.html_url;
+        }
+        updatePage().catch(console.error);
+    })();
+</script>
+</body>
+</html>
